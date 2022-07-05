@@ -29,17 +29,17 @@ func (mtc *MockTodoController) DeleteTodo(w http.ResponseWriter, r *http.Request
 type MockTodoRepository struct {
 }
 
-func (mtr *MockTodoRepository) GetTodos() (todos []entity.TodoEntity, err error) {
-	todos = []entity.TodoEntity{}
+func (mtr *MockTodoRepository) GetTodos() (todos []entity.Todo, err error) {
+	todos = []entity.Todo{}
 	return
 }
 
-func (mtr *MockTodoRepository) InsertTodo(todo entity.TodoEntity) (id int, err error) {
+func (mtr *MockTodoRepository) InsertTodo(todo entity.Todo) (id int, err error) {
 	id = 2
 	return
 }
 
-func (mtr *MockTodoRepository) UpdateTodo(todo entity.TodoEntity) (err error) {
+func (mtr *MockTodoRepository) UpdateTodo(todo entity.Todo) (err error) {
 	return
 }
 
@@ -50,18 +50,18 @@ func (mtr *MockTodoRepository) DeleteTodo(id int) (err error) {
 type MockTodoRepositoryGetTodosExist struct {
 }
 
-func (mtrgex *MockTodoRepositoryGetTodosExist) GetTodos() (todos []entity.TodoEntity, err error) {
-	todos = []entity.TodoEntity{}
-	todos = append(todos, entity.TodoEntity{Id: 1, Title: "title1", Content: "contents1"})
-	todos = append(todos, entity.TodoEntity{Id: 2, Title: "title2", Content: "contents2"})
+func (mtrgex *MockTodoRepositoryGetTodosExist) GetTodos() (todos []entity.Todo, err error) {
+	todos = []entity.Todo{}
+	todos = append(todos, entity.Todo{Id: 1, Title: "title1", Content: "contents1"})
+	todos = append(todos, entity.Todo{Id: 2, Title: "title2", Content: "contents2"})
 	return
 }
 
-func (mtrgex *MockTodoRepositoryGetTodosExist) InsertTodo(todo entity.TodoEntity) (id int, err error) {
+func (mtrgex *MockTodoRepositoryGetTodosExist) InsertTodo(todo entity.Todo) (id int, err error) {
 	return
 }
 
-func (mtrgex *MockTodoRepositoryGetTodosExist) UpdateTodo(todo entity.TodoEntity) (err error) {
+func (mtrgex *MockTodoRepositoryGetTodosExist) UpdateTodo(todo entity.Todo) (err error) {
 	return
 }
 
@@ -72,17 +72,17 @@ func (mtrgex *MockTodoRepositoryGetTodosExist) DeleteTodo(id int) (err error) {
 type MockTodoRepositoryError struct {
 }
 
-func (mtrgtn *MockTodoRepositoryError) GetTodos() (todos []entity.TodoEntity, err error) {
+func (mtrgtn *MockTodoRepositoryError) GetTodos() (todos []entity.Todo, err error) {
 	err = errors.New("unexpected error occurred")
 	return
 }
 
-func (mtrgie *MockTodoRepositoryError) InsertTodo(todo entity.TodoEntity) (id int, err error) {
+func (mtrgie *MockTodoRepositoryError) InsertTodo(todo entity.Todo) (id int, err error) {
 	err = errors.New("unexpected error occurred")
 	return
 }
 
-func (mtrgue *MockTodoRepositoryError) UpdateTodo(todo entity.TodoEntity) (err error) {
+func (mtrgue *MockTodoRepositoryError) UpdateTodo(todo entity.Todo) (err error) {
 	err = errors.New("unexpected error occurred")
 	return
 }

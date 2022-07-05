@@ -1,6 +1,6 @@
 package entity
 
-type TodoEntity struct {
+type Todo struct {
 	Id      int    `db:"id"`
 	Title   string `db:"title"`
 	Content string `db:"content"`

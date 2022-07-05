@@ -8,9 +8,9 @@ import (
 )
 
 type TodoRepository interface {
-	GetTodos() (todos []entity.TodoEntity, err error)
-	InsertTodo(todo entity.TodoEntity) (id int, err error)
-	UpdateTodo(todo entity.TodoEntity) (err error)
+	GetTodos() (todos []entity.Todo, err error)
+	InsertTodo(todo entity.Todo) (id int, err error)
+	UpdateTodo(todo entity.Todo) (err error)
 	DeleteTodo(id int) (err error)
 }
 
@@ -23,8 +23,8 @@ func NewTodoRepository() *todoRepository {
 	return &todoRepository{DB: Db}
 }
 
-func (tr *todoRepository) GetTodos() (todos []entity.TodoEntity, err error) {
-	todos = []entity.TodoEntity{}
+func (tr *todoRepository) GetTodos() (todos []entity.Todo, err error) {
+	todos = []entity.Todo{}
 	rows, err := tr.DB.
 		Query("SELECT id, title, content FROM todo ORDER BY id DESC")
 	if err != nil {
@@ -33,7 +33,7 @@ func (tr *todoRepository) GetTodos() (todos []entity.TodoEntity, err error) {
 	}
 
 	for rows.Next() {
-		todo := entity.TodoEntity{}
+		todo := entity.Todo{}
 		err = rows.Scan(&todo.Id, &todo.Title, &todo.Content)
 		if err != nil {
 			log.Print(err)
@@ -45,7 +45,7 @@ func (tr *todoRepository) GetTodos() (todos []entity.TodoEntity, err error) {
 	return
 }
 
-func (tr *todoRepository) InsertTodo(todo entity.TodoEntity) (id int, err error) {
+func (tr *todoRepository) InsertTodo(todo entity.Todo) (id int, err error) {
 	_, err = tr.DB.Exec("INSERT INTO todo (title, content) VALUES (?, ?)", todo.Title, todo.Content)
 	if err != nil {
 		log.Print(err)
@@ -55,7 +55,7 @@ func (tr *todoRepository) InsertTodo(todo entity.TodoEntity) (id int, err error)
 	return
 }
 
-func (tr *todoRepository) UpdateTodo(todo entity.TodoEntity) (err error) {
+func (tr *todoRepository) UpdateTodo(todo entity.Todo) (err error) {
 	_, err = tr.DB.Exec("UPDATE todo SET title = ?, content = ? WHERE id = ?", todo.Title, todo.Content, todo.Id)
 	return
 }
