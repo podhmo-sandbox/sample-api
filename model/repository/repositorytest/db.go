@@ -47,6 +47,14 @@ CREATE TABLE todo (
 		if _, err := db.Exec(stmt); err != nil {
 			return fmt.Errorf("create todo table: %w", err)
 		}
+
+		// TODO: bulk insert
+		for _, x := range xs {
+			_, err := db.Exec("INSERT INTO todo (id, title, content) VALUES (?, ?, ?)", x.Id, x.Title, x.Content)
+			if err != nil {
+				return fmt.Errorf("insert data: %w", err)
+			}
+		}
 		return nil
 	}
 }

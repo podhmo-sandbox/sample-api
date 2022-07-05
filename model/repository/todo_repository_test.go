@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -9,6 +10,34 @@ import (
 	"github.com/podhmo-sandbox/sample-api/model/entity"
 	rt "github.com/podhmo-sandbox/sample-api/model/repository/repositorytest"
 )
+
+func TestGetTodos(t *testing.T) {
+	ctx := context.Background()
+
+	todos := []entity.Todo{
+		{Id: 10, Title: "go to bed", Content: "should sleep"},
+		{Id: 11, Title: "go to toilet", Content: "should"},
+	}
+	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
+	defer teardown()
+
+	rt.AssertRowsCount(t, db, "todo", 2 /* want*/) // todo: checking by defer
+
+	repo := &todoRepository{DB: db}
+	got, err := repo.GetTodos()
+	if err != nil {
+		t.Errorf("unexpected error: %+v", err)
+	}
+
+	// order by id desc
+	want := todos
+	sort.Slice(want, func(i, j int) bool { return want[i].Id > want[j].Id })
+
+	type ref struct{ XS []entity.Todo }
+	if diff := cmp.Diff(ref{want}, ref{got}); diff != "" {
+		t.Errorf("GetContext() mismatch (-want +got):\n%s", diff)
+	}
+}
 
 func TestInsertTodo(t *testing.T) {
 	ctx := context.Background()
