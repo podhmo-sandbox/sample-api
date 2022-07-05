@@ -8,7 +8,6 @@ import (
 
 	"github.com/podhmo-sandbox/sample-api/controller/dto"
 	"github.com/podhmo-sandbox/sample-api/model/entity"
-	"github.com/podhmo-sandbox/sample-api/model/repository"
 )
 
 type TodoController interface {
@@ -18,11 +17,18 @@ type TodoController interface {
 	DeleteTodo(w http.ResponseWriter, r *http.Request)
 }
 
-type todoController struct {
-	tr repository.TodoRepository
+type TodoRepository interface {
+	GetTodos() (todos []entity.Todo, err error)
+	InsertTodo(todo entity.Todo) (id int, err error)
+	UpdateTodo(todo entity.Todo) (err error)
+	DeleteTodo(id int) (err error)
 }
 
-func NewTodoController(tr repository.TodoRepository) TodoController {
+type todoController struct {
+	tr TodoRepository
+}
+
+func NewTodoController(tr TodoRepository) TodoController {
 	return &todoController{tr}
 }
 

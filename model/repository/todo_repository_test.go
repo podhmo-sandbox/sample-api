@@ -23,7 +23,7 @@ func TestGetTodos(t *testing.T) {
 
 	rt.AssertRowsCount(t, db, "todo", 2 /* want*/) // todo: checking by defer
 
-	repo := &todoRepository{DB: db}
+	repo := &TodoRepository{DB: db}
 	got, err := repo.GetTodos()
 	if err != nil {
 		t.Errorf("unexpected error: %+v", err)
@@ -50,7 +50,7 @@ func TestInsertTodo(t *testing.T) {
 		Content: "should sleep",
 	}
 
-	repo := &todoRepository{DB: db}
+	repo := &TodoRepository{DB: db}
 	id, err := repo.InsertTodo(want)
 	if err != nil {
 		t.Errorf("unexpected error: %+v", err)
@@ -78,7 +78,7 @@ func TestUpdateTodo(t *testing.T) {
 	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
 
 	want := entity.Todo{Id: id, Title: "*", Content: "**"}
-	repo := &todoRepository{DB: db}
+	repo := &TodoRepository{DB: db}
 	if err := repo.UpdateTodo(want); err != nil {
 		t.Errorf("unexpected error: %+v", err)
 	}
@@ -102,7 +102,7 @@ func TestDeleteTodo(t *testing.T) {
 	defer teardown()
 	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
 
-	repo := &todoRepository{DB: db}
+	repo := &TodoRepository{DB: db}
 	if err := repo.DeleteTodo(todos[0].Id); err != nil {
 		t.Errorf("unexpected error: %+v", err)
 	}
