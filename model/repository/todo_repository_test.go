@@ -91,3 +91,20 @@ func TestUpdateTodo(t *testing.T) {
 		t.Errorf("GetContext() mismatch (-want +got):\n%s", diff)
 	}
 }
+
+func TestDeleteTodo(t *testing.T) {
+	ctx := context.Background()
+	id := 10
+	todos := []entity.Todo{
+		{Id: id, Title: "go to bed", Content: "should sleep"},
+	}
+	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
+	defer teardown()
+	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
+
+	repo := &todoRepository{DB: db}
+	if err := repo.DeleteTodo(todos[0].Id); err != nil {
+		t.Errorf("unexpected error: %+v", err)
+	}
+	rt.AssertRowsCount(t, db, "todo", 0 /* want*/)
+}
