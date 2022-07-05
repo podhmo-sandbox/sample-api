@@ -43,12 +43,18 @@ func (tr *todoRepository) InsertTodo(todo entity.Todo) (int, error) {
 	return id, nil
 }
 
-func (tr *todoRepository) UpdateTodo(todo entity.Todo) (err error) {
-	_, err = tr.DB.Exec("UPDATE todo SET title = ?, content = ? WHERE id = ?", todo.Title, todo.Content, todo.Id)
-	return
+func (tr *todoRepository) UpdateTodo(todo entity.Todo) error {
+	stmt := "UPDATE todo SET title = ?, content = ? WHERE id = ?"
+	if _, err := tr.DB.Exec(stmt, todo.Title, todo.Content, todo.Id); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (tr *todoRepository) DeleteTodo(id int) (err error) {
-	_, err = tr.DB.Exec("DELETE FROM todo WHERE id = ?", id)
-	return
+func (tr *todoRepository) DeleteTodo(id int) error {
+	stmt := "DELETE FROM todo WHERE id = ?"
+	if _, err := tr.DB.Exec(stmt, id); err != nil {
+		return err
+	}
+	return nil
 }
