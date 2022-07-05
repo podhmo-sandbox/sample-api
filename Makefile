@@ -6,7 +6,7 @@ test:
 # 	go tool cover -html=./test_results/cover.out -o ./test_results/cover.html
 .PHONY: test
 format:
-	go list ./... | xargs goimports -w
+	go list -f '{{.Dir}}' ./... | xargs goimports -w
 .PHONY: format
 lint:
 	staticcheck ./...
