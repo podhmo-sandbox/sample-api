@@ -53,7 +53,7 @@ func (tc *todoController) PostTodo(w http.ResponseWriter, r *http.Request) {
 	var todoRequest dto.TodoRequest
 	json.Unmarshal(body, &todoRequest)
 
-	todo := entity.TodoEntity{Title: todoRequest.Title, Content: todoRequest.Content}
+	todo := entity.Todo{Title: todoRequest.Title, Content: todoRequest.Content}
 	id, err := tc.tr.InsertTodo(todo)
 	if err != nil {
 		w.WriteHeader(500)
@@ -76,7 +76,7 @@ func (tc *todoController) PutTodo(w http.ResponseWriter, r *http.Request) {
 	var todoRequest dto.TodoRequest
 	json.Unmarshal(body, &todoRequest)
 
-	todo := entity.TodoEntity{Id: todoId, Title: todoRequest.Title, Content: todoRequest.Content}
+	todo := entity.Todo{Id: todoId, Title: todoRequest.Title, Content: todoRequest.Content}
 	err = tc.tr.UpdateTodo(todo)
 	if err != nil {
 		w.WriteHeader(500)
