@@ -1,8 +1,21 @@
+# ----------------------------------------
+# management
+# ----------------------------------------
+test:
+	go test ./... # -coverprofile=./test_results/cover.out
+# 	go tool cover -html=./test_results/cover.out -o ./test_results/cover.html
+.PHONY: test
 format:
-	@find . -print | grep --regex '.*\.go' | xargs goimports -w -local "github.com/koga456/sample-api"
-verify:
-	@staticcheck ./... && go vet ./...
-unit-test:
-	@go test ./... -coverprofile=./test_results/cover.out && go tool cover -html=./test_results/cover.out -o ./test_results/cover.html
+	go list ./... | xargs goimports -w
+.PHONY: format
+lint:
+	staticcheck ./...
+	go vet ./...
+.PHONY: lint
+
+# ----------------------------------------
+# local development
+# ----------------------------------------
 serve:
-	@docker-compose -f build/docker-compose.yml up
+	docker-compose -f build/docker-compose.yml up
+.PHONY: serve
