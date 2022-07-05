@@ -37,7 +37,7 @@ func (tr *TodoRepository) InsertTodo(todo entity.Todo) (int, error) {
 
 func (tr *TodoRepository) UpdateTodo(todo entity.Todo) error {
 	stmt := "UPDATE todo SET title = ?, content = ? WHERE id = ?"
-	if _, err := tr.DB.Exec(stmt, todo.Title, todo.Content, todo.Id); err != nil {
+	if _, err := tr.DB.Exec(stmt, todo.Title, todo.Content, todo.ID); err != nil {
 		return err
 	}
 	return nil

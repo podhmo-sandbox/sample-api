@@ -49,7 +49,7 @@ CREATE TABLE todo (
 		if len(xs) > 0 {
 			t.Logf("\tinsert %d rows.", len(xs))
 			for i, x := range xs {
-				_, err := db.Exec("INSERT INTO todo (id, title, content) VALUES (?, ?, ?)", x.Id, x.Title, x.Content)
+				_, err := db.Exec("INSERT INTO todo (id, title, content) VALUES (?, ?, ?)", x.ID, x.Title, x.Content)
 				if err != nil {
 					t.Fatalf("insert data(%d): %+v", i, err)
 				}

@@ -15,8 +15,8 @@ func TestGetTodos(t *testing.T) {
 	ctx := context.Background()
 
 	todos := []entity.Todo{
-		{Id: 10, Title: "go to bed", Content: "should sleep"},
-		{Id: 11, Title: "go to toilet", Content: "should"},
+		{ID: 10, Title: "go to bed", Content: "should sleep"},
+		{ID: 11, Title: "go to toilet", Content: "should"},
 	}
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
 	defer teardown()
@@ -31,7 +31,7 @@ func TestGetTodos(t *testing.T) {
 
 	// order by id desc
 	want := todos
-	sort.Slice(want, func(i, j int) bool { return want[i].Id > want[j].Id })
+	sort.Slice(want, func(i, j int) bool { return want[i].ID > want[j].ID })
 
 	type ref struct{ XS []entity.Todo }
 	if diff := cmp.Diff(ref{want}, ref{got}); diff != "" {
@@ -60,7 +60,7 @@ func TestInsertTodo(t *testing.T) {
 	if err := db.GetContext(ctx, &got, "SELECT id,title,content FROM todo WHERE id=?", id); err != nil {
 		t.Errorf("unexpected error (db check): %+v", err)
 	}
-	if diff := cmp.Diff(want, got, cmpopts.IgnoreFields(entity.Todo{}, "Id")); diff != "" {
+	if diff := cmp.Diff(want, got, cmpopts.IgnoreFields(entity.Todo{}, "ID")); diff != "" {
 		t.Errorf("GetContext() mismatch (-want +got):\n%s", diff)
 	}
 	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
@@ -71,13 +71,13 @@ func TestUpdateTodo(t *testing.T) {
 
 	id := 10
 	todos := []entity.Todo{
-		{Id: id, Title: "go to bed", Content: "should sleep"},
+		{ID: id, Title: "go to bed", Content: "should sleep"},
 	}
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
 	defer teardown()
 	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
 
-	want := entity.Todo{Id: id, Title: "*", Content: "**"}
+	want := entity.Todo{ID: id, Title: "*", Content: "**"}
 	repo := &TodoRepository{DB: db}
 	if err := repo.UpdateTodo(want); err != nil {
 		t.Errorf("unexpected error: %+v", err)
@@ -96,14 +96,14 @@ func TestDeleteTodo(t *testing.T) {
 	ctx := context.Background()
 	id := 10
 	todos := []entity.Todo{
-		{Id: id, Title: "go to bed", Content: "should sleep"},
+		{ID: id, Title: "go to bed", Content: "should sleep"},
 	}
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
 	defer teardown()
 	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
 
 	repo := &TodoRepository{DB: db}
-	if err := repo.DeleteTodo(todos[0].Id); err != nil {
+	if err := repo.DeleteTodo(todos[0].ID); err != nil {
 		t.Errorf("unexpected error: %+v", err)
 	}
 	rt.AssertRowsCount(t, db, "todo", 0 /* want*/)

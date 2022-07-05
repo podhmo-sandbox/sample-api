@@ -52,8 +52,8 @@ type MockTodoRepositoryGetTodosExist struct {
 
 func (mtrgex *MockTodoRepositoryGetTodosExist) GetTodos() (todos []entity.Todo, err error) {
 	todos = []entity.Todo{}
-	todos = append(todos, entity.Todo{Id: 1, Title: "title1", Content: "contents1"})
-	todos = append(todos, entity.Todo{Id: 2, Title: "title2", Content: "contents2"})
+	todos = append(todos, entity.Todo{ID: 1, Title: "title1", Content: "contents1"})
+	todos = append(todos, entity.Todo{ID: 2, Title: "title2", Content: "contents2"})
 	return
 }
 

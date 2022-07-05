@@ -34,7 +34,7 @@ func (tc *TodoController) GetTodos(w http.ResponseWriter, r *http.Request) {
 
 	var todoResponses []dto.TodoResponse
 	for _, v := range todos {
-		todoResponses = append(todoResponses, dto.TodoResponse{Id: v.Id, Title: v.Title, Content: v.Content})
+		todoResponses = append(todoResponses, dto.TodoResponse{ID: v.ID, Title: v.Title, Content: v.Content})
 	}
 
 	var todosResponse dto.TodosResponse
@@ -64,7 +64,7 @@ func (tc *TodoController) PostTodo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (tc *TodoController) PutTodo(w http.ResponseWriter, r *http.Request) {
-	todoId, err := strconv.Atoi(path.Base(r.URL.Path))
+	todoID, err := strconv.Atoi(path.Base(r.URL.Path))
 	if err != nil {
 		w.WriteHeader(400)
 		return
@@ -75,7 +75,7 @@ func (tc *TodoController) PutTodo(w http.ResponseWriter, r *http.Request) {
 	var todoRequest dto.TodoRequest
 	json.Unmarshal(body, &todoRequest)
 
-	todo := entity.Todo{Id: todoId, Title: todoRequest.Title, Content: todoRequest.Content}
+	todo := entity.Todo{ID: todoID, Title: todoRequest.Title, Content: todoRequest.Content}
 	err = tc.tr.UpdateTodo(todo)
 	if err != nil {
 		w.WriteHeader(500)
@@ -86,13 +86,13 @@ func (tc *TodoController) PutTodo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (tc *TodoController) DeleteTodo(w http.ResponseWriter, r *http.Request) {
-	todoId, err := strconv.Atoi(path.Base(r.URL.Path))
+	todoID, err := strconv.Atoi(path.Base(r.URL.Path))
 	if err != nil {
 		w.WriteHeader(400)
 		return
 	}
 
-	err = tc.tr.DeleteTodo(todoId)
+	err = tc.tr.DeleteTodo(todoID)
 	if err != nil {
 		w.WriteHeader(500)
 		return
