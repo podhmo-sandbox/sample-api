@@ -2,7 +2,6 @@ package repositorytest
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/jmoiron/sqlx"
@@ -10,7 +9,7 @@ import (
 	"github.com/podhmo/or"
 )
 
-type DBOption func(*sqlx.DB) error
+type DBOption func(*testing.T, *sqlx.DB)
 
 type DBConfig struct {
 	Driver string
@@ -26,9 +25,7 @@ func NewDB(ctx context.Context, t *testing.T, options ...DBOption) (*sqlx.DB, fu
 	db := or.Fatal(sqlx.ConnectContext(ctx, c.Driver, c.DSN))(t)
 
 	for _, opt := range options {
-		if err := opt(db); err != nil {
-			t.Fatalf("error on %+v", err)
-		}
+		opt(t, db)
 	}
 	return db, func() {
 	}
@@ -36,7 +33,7 @@ func NewDB(ctx context.Context, t *testing.T, options ...DBOption) (*sqlx.DB, fu
 
 func WithTodo(xs []entity.Todo) DBOption {
 	// TODO: buildのところのファイルをもらってくる？
-	return func(db *sqlx.DB) error {
+	return func(t *testing.T, db *sqlx.DB) {
 		stmt := `
 CREATE TABLE todo (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,16 +42,18 @@ CREATE TABLE todo (
 );
 `
 		if _, err := db.Exec(stmt); err != nil {
-			return fmt.Errorf("create todo table: %w", err)
+			t.Fatalf("create todo table: %v", err)
 		}
 
 		// TODO: bulk insert
-		for _, x := range xs {
-			_, err := db.Exec("INSERT INTO todo (id, title, content) VALUES (?, ?, ?)", x.Id, x.Title, x.Content)
-			if err != nil {
-				return fmt.Errorf("insert data: %w", err)
+		if len(xs) > 0 {
+			t.Logf("\tinsert %d rows.", len(xs))
+			for i, x := range xs {
+				_, err := db.Exec("INSERT INTO todo (id, title, content) VALUES (?, ?, ?)", x.Id, x.Title, x.Content)
+				if err != nil {
+					t.Fatalf("insert data(%d): %+v", i, err)
+				}
 			}
 		}
-		return nil
 	}
 }
