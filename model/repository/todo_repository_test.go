@@ -65,3 +65,29 @@ func TestInsertTodo(t *testing.T) {
 	}
 	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
 }
+
+func TestUpdateTodo(t *testing.T) {
+	ctx := context.Background()
+
+	id := 10
+	todos := []entity.Todo{
+		{Id: id, Title: "go to bed", Content: "should sleep"},
+	}
+	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
+	defer teardown()
+	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
+
+	want := entity.Todo{Id: id, Title: "*", Content: "**"}
+	repo := &todoRepository{DB: db}
+	if err := repo.UpdateTodo(want); err != nil {
+		t.Errorf("unexpected error: %+v", err)
+	}
+
+	gots, err := repo.GetTodos()
+	if err != nil {
+		t.Errorf("unexpected error: %+v", err)
+	}
+	if diff := cmp.Diff(want, gots[0]); diff != "" {
+		t.Errorf("GetContext() mismatch (-want +got):\n%s", diff)
+	}
+}
