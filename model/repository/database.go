@@ -1,18 +1,13 @@
 package repository
 
 import (
-	"database/sql"
-
+	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
 
-var Db *sql.DB
+var Db *sqlx.DB
 
 func init() {
-	var err error
 	// TODO: customizable
-	Db, err = sql.Open("sqlite", ":memory:")
-	if err != nil {
-		panic(err)
-	}
+	Db = sqlx.MustConnect("sqlite", ":memory:")
 }
