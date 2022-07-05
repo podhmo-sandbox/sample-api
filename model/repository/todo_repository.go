@@ -3,8 +3,6 @@ package repository
 import (
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
-
 	"github.com/podhmo-sandbox/sample-api/model/entity"
 )
 
