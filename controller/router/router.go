@@ -4,10 +4,6 @@ import (
 	"net/http"
 )
 
-type Router interface {
-	HandleTodosRequest(w http.ResponseWriter, r *http.Request)
-}
-
 type TodoController interface {
 	GetTodos(w http.ResponseWriter, r *http.Request)
 	PostTodo(w http.ResponseWriter, r *http.Request)
@@ -15,15 +11,15 @@ type TodoController interface {
 	DeleteTodo(w http.ResponseWriter, r *http.Request)
 }
 
-type router struct {
+type Router struct {
 	tc TodoController
 }
 
-func NewRouter(tc TodoController) Router {
-	return &router{tc}
+func NewRouter(tc TodoController) *Router {
+	return &Router{tc}
 }
 
-func (ro *router) HandleTodosRequest(w http.ResponseWriter, r *http.Request) {
+func (ro *Router) HandleTodosRequest(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		ro.tc.GetTodos(w, r)
