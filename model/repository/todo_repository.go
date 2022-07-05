@@ -7,23 +7,15 @@ import (
 	"github.com/podhmo-sandbox/sample-api/model/entity"
 )
 
-type TodoRepository interface {
-	GetTodos() (todos []entity.Todo, err error)
-	InsertTodo(todo entity.Todo) (id int, err error)
-	UpdateTodo(todo entity.Todo) (err error)
-	DeleteTodo(id int) (err error)
-}
-
-// this is temporary implementation
-type todoRepository struct {
+type TodoRepository struct {
 	DB *sqlx.DB
 }
 
-func NewTodoRepository() *todoRepository {
-	return &todoRepository{DB: Db}
+func NewTodoRepository() *TodoRepository {
+	return &TodoRepository{DB: Db}
 }
 
-func (tr *todoRepository) GetTodos() ([]entity.Todo, error) {
+func (tr *TodoRepository) GetTodos() ([]entity.Todo, error) {
 	var todos []entity.Todo
 	stmt := "SELECT id, title, content FROM todo ORDER BY id DESC"
 	if err := tr.DB.Select(&todos, stmt); err != nil {
@@ -33,7 +25,7 @@ func (tr *todoRepository) GetTodos() ([]entity.Todo, error) {
 	return todos, nil
 }
 
-func (tr *todoRepository) InsertTodo(todo entity.Todo) (int, error) {
+func (tr *TodoRepository) InsertTodo(todo entity.Todo) (int, error) {
 	var id int
 	stmt := `INSERT INTO todo (title, content) VALUES (?, ?) RETURNING id`
 	if err := tr.DB.Get(&id, stmt, todo.Title, todo.Content); err != nil {
@@ -43,7 +35,7 @@ func (tr *todoRepository) InsertTodo(todo entity.Todo) (int, error) {
 	return id, nil
 }
 
-func (tr *todoRepository) UpdateTodo(todo entity.Todo) error {
+func (tr *TodoRepository) UpdateTodo(todo entity.Todo) error {
 	stmt := "UPDATE todo SET title = ?, content = ? WHERE id = ?"
 	if _, err := tr.DB.Exec(stmt, todo.Title, todo.Content, todo.Id); err != nil {
 		return err
@@ -51,7 +43,7 @@ func (tr *todoRepository) UpdateTodo(todo entity.Todo) error {
 	return nil
 }
 
-func (tr *todoRepository) DeleteTodo(id int) error {
+func (tr *TodoRepository) DeleteTodo(id int) error {
 	stmt := "DELETE FROM todo WHERE id = ?"
 	if _, err := tr.DB.Exec(stmt, id); err != nil {
 		return err
