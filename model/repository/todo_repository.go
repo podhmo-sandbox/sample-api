@@ -45,14 +45,14 @@ func (tr *todoRepository) GetTodos() (todos []entity.Todo, err error) {
 	return
 }
 
-func (tr *todoRepository) InsertTodo(todo entity.Todo) (id int, err error) {
-	_, err = tr.DB.Exec("INSERT INTO todo (title, content) VALUES (?, ?)", todo.Title, todo.Content)
-	if err != nil {
+func (tr *todoRepository) InsertTodo(todo entity.Todo) (int, error) {
+	var id int
+	stmt := `INSERT INTO todo (title, content) VALUES (?, ?) RETURNING id`
+	if err := tr.DB.Get(&id, stmt, todo.Title, todo.Content); err != nil {
 		log.Print(err)
-		return
+		return id, err
 	}
-	err = tr.DB.QueryRow("SELECT id FROM todo ORDER BY id DESC LIMIT 1").Scan(&id)
-	return
+	return id, nil
 }
 
 func (tr *todoRepository) UpdateTodo(todo entity.Todo) (err error) {
