@@ -23,44 +23,38 @@ func NewTodoRepository() *todoRepository {
 	return &todoRepository{DB: Db}
 }
 
-func (tr *todoRepository) GetTodos() (todos []entity.Todo, err error) {
-	todos = []entity.Todo{}
-	rows, err := tr.DB.
-		Query("SELECT id, title, content FROM todo ORDER BY id DESC")
-	if err != nil {
+func (tr *todoRepository) GetTodos() ([]entity.Todo, error) {
+	var todos []entity.Todo
+	stmt := "SELECT id, title, content FROM todo ORDER BY id DESC"
+	if err := tr.DB.Select(&todos, stmt); err != nil {
 		log.Print(err)
-		return
+		return nil, err
 	}
-
-	for rows.Next() {
-		todo := entity.Todo{}
-		err = rows.Scan(&todo.Id, &todo.Title, &todo.Content)
-		if err != nil {
-			log.Print(err)
-			return
-		}
-		todos = append(todos, todo)
-	}
-
-	return
+	return todos, nil
 }
 
-func (tr *todoRepository) InsertTodo(todo entity.Todo) (id int, err error) {
-	_, err = tr.DB.Exec("INSERT INTO todo (title, content) VALUES (?, ?)", todo.Title, todo.Content)
-	if err != nil {
+func (tr *todoRepository) InsertTodo(todo entity.Todo) (int, error) {
+	var id int
+	stmt := `INSERT INTO todo (title, content) VALUES (?, ?) RETURNING id`
+	if err := tr.DB.Get(&id, stmt, todo.Title, todo.Content); err != nil {
 		log.Print(err)
-		return
+		return id, err
 	}
-	err = tr.DB.QueryRow("SELECT id FROM todo ORDER BY id DESC LIMIT 1").Scan(&id)
-	return
+	return id, nil
 }
 
-func (tr *todoRepository) UpdateTodo(todo entity.Todo) (err error) {
-	_, err = tr.DB.Exec("UPDATE todo SET title = ?, content = ? WHERE id = ?", todo.Title, todo.Content, todo.Id)
-	return
+func (tr *todoRepository) UpdateTodo(todo entity.Todo) error {
+	stmt := "UPDATE todo SET title = ?, content = ? WHERE id = ?"
+	if _, err := tr.DB.Exec(stmt, todo.Title, todo.Content, todo.Id); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (tr *todoRepository) DeleteTodo(id int) (err error) {
-	_, err = tr.DB.Exec("DELETE FROM todo WHERE id = ?", id)
-	return
+func (tr *todoRepository) DeleteTodo(id int) error {
+	stmt := "DELETE FROM todo WHERE id = ?"
+	if _, err := tr.DB.Exec(stmt, id); err != nil {
+		return err
+	}
+	return nil
 }
