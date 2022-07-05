@@ -23,26 +23,14 @@ func NewTodoRepository() *todoRepository {
 	return &todoRepository{DB: Db}
 }
 
-func (tr *todoRepository) GetTodos() (todos []entity.Todo, err error) {
-	todos = []entity.Todo{}
-	rows, err := tr.DB.
-		Query("SELECT id, title, content FROM todo ORDER BY id DESC")
-	if err != nil {
+func (tr *todoRepository) GetTodos() ([]entity.Todo, error) {
+	var todos []entity.Todo
+	stmt := "SELECT id, title, content FROM todo ORDER BY id DESC"
+	if err := tr.DB.Select(&todos, stmt); err != nil {
 		log.Print(err)
-		return
+		return nil, err
 	}
-
-	for rows.Next() {
-		todo := entity.Todo{}
-		err = rows.Scan(&todo.Id, &todo.Title, &todo.Content)
-		if err != nil {
-			log.Print(err)
-			return
-		}
-		todos = append(todos, todo)
-	}
-
-	return
+	return todos, nil
 }
 
 func (tr *todoRepository) InsertTodo(todo entity.Todo) (int, error) {
