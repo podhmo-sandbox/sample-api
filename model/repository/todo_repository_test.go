@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/jmoiron/sqlx"
 	"github.com/podhmo-sandbox/sample-api/model/entity"
 	"github.com/podhmo/or"
@@ -57,12 +59,24 @@ func TestInsertTodo(t *testing.T) {
 	defer teardown()
 
 	assertRowsCount(t, db, "todo", 0 /* want*/) // todo: checking by defer
+	want := entity.TodoEntity{
+		Title:   "go to bed",
+		Content: "should sleep",
+	}
+
 	repo := &todoRepository{DB: db}
-	id, err := repo.InsertTodo(entity.TodoEntity{Title: "go to bed", Content: "should sleep"})
+	id, err := repo.InsertTodo(want)
 	if err != nil {
 		t.Errorf("unexpected error: %+v", err)
 	}
-	_ = id
+
+	var got entity.TodoEntity
+	if err := db.GetContext(ctx, &got, "SELECT id,title,content FROM todo WHERE id=?", id); err != nil {
+		t.Errorf("unexpected error (db check): %+v", err)
+	}
+	if diff := cmp.Diff(want, got, cmpopts.IgnoreFields(entity.TodoEntity{}, "Id")); diff != "" {
+		t.Errorf("GetContext() mismatch (-want +got):\n%s", diff)
+	}
 	assertRowsCount(t, db, "todo", 1 /* want*/)
 }
 
