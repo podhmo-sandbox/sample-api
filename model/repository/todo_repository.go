@@ -3,6 +3,7 @@ package repository
 import (
 	"log"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/podhmo-sandbox/sample-api/model/entity"
 )
 
@@ -13,16 +14,18 @@ type TodoRepository interface {
 	DeleteTodo(id int) (err error)
 }
 
+// this is temporary implementation
 type todoRepository struct {
+	DB *sqlx.DB
 }
 
-func NewTodoRepository() TodoRepository {
-	return &todoRepository{}
+func NewTodoRepository() *todoRepository {
+	return &todoRepository{DB: Db}
 }
 
 func (tr *todoRepository) GetTodos() (todos []entity.TodoEntity, err error) {
 	todos = []entity.TodoEntity{}
-	rows, err := Db.
+	rows, err := tr.DB.
 		Query("SELECT id, title, content FROM todo ORDER BY id DESC")
 	if err != nil {
 		log.Print(err)
@@ -43,21 +46,21 @@ func (tr *todoRepository) GetTodos() (todos []entity.TodoEntity, err error) {
 }
 
 func (tr *todoRepository) InsertTodo(todo entity.TodoEntity) (id int, err error) {
-	_, err = Db.Exec("INSERT INTO todo (title, content) VALUES (?, ?)", todo.Title, todo.Content)
+	_, err = tr.DB.Exec("INSERT INTO todo (title, content) VALUES (?, ?)", todo.Title, todo.Content)
 	if err != nil {
 		log.Print(err)
 		return
 	}
-	err = Db.QueryRow("SELECT id FROM todo ORDER BY id DESC LIMIT 1").Scan(&id)
+	err = tr.DB.QueryRow("SELECT id FROM todo ORDER BY id DESC LIMIT 1").Scan(&id)
 	return
 }
 
 func (tr *todoRepository) UpdateTodo(todo entity.TodoEntity) (err error) {
-	_, err = Db.Exec("UPDATE todo SET title = ?, content = ? WHERE id = ?", todo.Title, todo.Content, todo.Id)
+	_, err = tr.DB.Exec("UPDATE todo SET title = ?, content = ? WHERE id = ?", todo.Title, todo.Content, todo.Id)
 	return
 }
 
 func (tr *todoRepository) DeleteTodo(id int) (err error) {
-	_, err = Db.Exec("DELETE FROM todo WHERE id = ?", id)
+	_, err = tr.DB.Exec("DELETE FROM todo WHERE id = ?", id)
 	return
 }
