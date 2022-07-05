@@ -1,4 +1,4 @@
-package controller
+package router
 
 import (
 	"net/http"
@@ -6,6 +6,13 @@ import (
 
 type Router interface {
 	HandleTodosRequest(w http.ResponseWriter, r *http.Request)
+}
+
+type TodoController interface {
+	GetTodos(w http.ResponseWriter, r *http.Request)
+	PostTodo(w http.ResponseWriter, r *http.Request)
+	PutTodo(w http.ResponseWriter, r *http.Request)
+	DeleteTodo(w http.ResponseWriter, r *http.Request)
 }
 
 type router struct {

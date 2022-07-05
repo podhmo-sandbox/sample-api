@@ -10,13 +10,6 @@ import (
 	"github.com/podhmo-sandbox/sample-api/model/entity"
 )
 
-type TodoController interface {
-	GetTodos(w http.ResponseWriter, r *http.Request)
-	PostTodo(w http.ResponseWriter, r *http.Request)
-	PutTodo(w http.ResponseWriter, r *http.Request)
-	DeleteTodo(w http.ResponseWriter, r *http.Request)
-}
-
 type TodoRepository interface {
 	GetTodos() (todos []entity.Todo, err error)
 	InsertTodo(todo entity.Todo) (id int, err error)
@@ -24,15 +17,15 @@ type TodoRepository interface {
 	DeleteTodo(id int) (err error)
 }
 
-type todoController struct {
+type TodoController struct {
 	tr TodoRepository
 }
 
-func NewTodoController(tr TodoRepository) TodoController {
-	return &todoController{tr}
+func NewTodoController(tr TodoRepository) *TodoController {
+	return &TodoController{tr}
 }
 
-func (tc *todoController) GetTodos(w http.ResponseWriter, r *http.Request) {
+func (tc *TodoController) GetTodos(w http.ResponseWriter, r *http.Request) {
 	todos, err := tc.tr.GetTodos()
 	if err != nil {
 		w.WriteHeader(500)
@@ -53,7 +46,7 @@ func (tc *todoController) GetTodos(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 }
 
-func (tc *todoController) PostTodo(w http.ResponseWriter, r *http.Request) {
+func (tc *TodoController) PostTodo(w http.ResponseWriter, r *http.Request) {
 	body := make([]byte, r.ContentLength)
 	r.Body.Read(body)
 	var todoRequest dto.TodoRequest
@@ -70,7 +63,7 @@ func (tc *todoController) PostTodo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(201)
 }
 
-func (tc *todoController) PutTodo(w http.ResponseWriter, r *http.Request) {
+func (tc *TodoController) PutTodo(w http.ResponseWriter, r *http.Request) {
 	todoId, err := strconv.Atoi(path.Base(r.URL.Path))
 	if err != nil {
 		w.WriteHeader(400)
@@ -92,7 +85,7 @@ func (tc *todoController) PutTodo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(204)
 }
 
-func (tc *todoController) DeleteTodo(w http.ResponseWriter, r *http.Request) {
+func (tc *TodoController) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	todoId, err := strconv.Atoi(path.Base(r.URL.Path))
 	if err != nil {
 		w.WriteHeader(400)
