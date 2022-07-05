@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/koga456/sample-api/controller"
-	"github.com/koga456/sample-api/model/repository"
+	"github.com/podhmo-sandbox/sample-api/controller"
+	"github.com/podhmo-sandbox/sample-api/model/repository"
 )
 
 var tr = repository.NewTodoRepository()

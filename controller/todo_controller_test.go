@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/koga456/sample-api/controller/dto"
-	"github.com/koga456/sample-api/test"
+	"github.com/podhmo-sandbox/sample-api/controller/dto"
+	"github.com/podhmo-sandbox/sample-api/test"
 )
 
 func TestGetTodos_NotFound(t *testing.T) {

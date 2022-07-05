@@ -6,9 +6,9 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/koga456/sample-api/controller/dto"
-	"github.com/koga456/sample-api/model/entity"
-	"github.com/koga456/sample-api/model/repository"
+	"github.com/podhmo-sandbox/sample-api/controller/dto"
+	"github.com/podhmo-sandbox/sample-api/model/entity"
+	"github.com/podhmo-sandbox/sample-api/model/repository"
 )
 
 type TodoController interface {

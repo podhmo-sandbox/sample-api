@@ -5,7 +5,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	"github.com/koga456/sample-api/model/entity"
+	"github.com/podhmo-sandbox/sample-api/model/entity"
 )
 
 type TodoRepository interface {
