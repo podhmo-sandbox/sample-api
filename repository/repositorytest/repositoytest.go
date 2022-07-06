@@ -1,35 +1,21 @@
 package repositorytest
 
 import (
-	"context"
 	"testing"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/podhmo-sandbox/sample-api/entity"
-	"github.com/podhmo/or"
+	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
 )
 
-type DBOption func(*testing.T, *sqlx.DB)
+// setup
 
-type DBConfig struct {
-	Driver string
-	DSN    string
-}
+type DBOption = dblib.DBOption
 
-func DefaultDBConfig() DBConfig {
-	return DBConfig{Driver: "sqlite", DSN: ":memory:"}
-}
-
-func NewDB(ctx context.Context, t *testing.T, options ...DBOption) (*sqlx.DB, func()) {
-	c := DefaultDBConfig()
-	db := or.Fatal(sqlx.ConnectContext(ctx, c.Driver, c.DSN))(t)
-
-	for _, opt := range options {
-		opt(t, db)
-	}
-	return db, func() {
-	}
-}
+var (
+	DefaultDBConfig = dblib.DefaultDBConfig
+	NewDB           = dblib.NewDB
+)
 
 func WithTodo(xs []entity.Todo) DBOption {
 	// TODO: buildのところのファイルをもらってくる？

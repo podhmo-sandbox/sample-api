@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/podhmo-sandbox/sample-api/entity"
+	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
 	rt "github.com/podhmo-sandbox/sample-api/repository/repositorytest"
 )
 
@@ -21,7 +22,7 @@ func TestGetTodos(t *testing.T) {
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
 	defer teardown()
 
-	rt.AssertRowsCount(t, db, "todo", 2 /* want*/) // todo: checking by defer
+	dblib.AssertRowsCount(t, db, "todo", 2 /* want*/) // todo: checking by defer
 
 	repo := &TodoRepository{DB: db}
 	got, err := repo.GetTodos()
@@ -44,7 +45,7 @@ func TestInsertTodo(t *testing.T) {
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(nil))
 	defer teardown()
 
-	assertAfterAction := rt.AssertRowsCountWith(t, db, "todo", 0 /* want*/)
+	assertAfterAction := dblib.AssertRowsCountWith(t, db, "todo", 0 /* want*/)
 	defer assertAfterAction(1 /* want */)
 
 	want := entity.Todo{
@@ -76,7 +77,7 @@ func TestUpdateTodo(t *testing.T) {
 	}
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
 	defer teardown()
-	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
+	dblib.AssertRowsCount(t, db, "todo", 1 /* want*/)
 
 	want := entity.Todo{ID: id, Title: "*", Content: "**"}
 	repo := &TodoRepository{DB: db}
@@ -102,7 +103,7 @@ func TestDeleteTodo(t *testing.T) {
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
 	defer teardown()
 
-	assertAfterAction := rt.AssertRowsCountWith(t, db, "todo", 1 /* want*/)
+	assertAfterAction := dblib.AssertRowsCountWith(t, db, "todo", 1 /* want*/)
 	defer assertAfterAction(0 /* want */)
 
 	repo := &TodoRepository{DB: db}

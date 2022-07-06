@@ -1,4 +1,4 @@
-package repositorytest
+package dblib
 
 import (
 	"fmt"
