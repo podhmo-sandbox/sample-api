@@ -9,7 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/podhmo-sandbox/sample-api/entity"
 	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
-	rt "github.com/podhmo-sandbox/sample-api/repository/repositorytest"
+	"github.com/podhmo-sandbox/sample-api/repository/repositorytest"
 	_ "modernc.org/sqlite"
 )
 
@@ -20,7 +20,7 @@ func TestGetTodos(t *testing.T) {
 		{ID: 10, Title: "go to bed", Content: "should sleep"},
 		{ID: 11, Title: "go to toilet", Content: "should"},
 	}
-	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
+	db, teardown := dblib.NewDB(ctx, t, repositorytest.WithTodo(todos))
 	defer teardown()
 
 	dblib.AssertRowsCount(t, db, "todo", 2 /* want*/) // todo: checking by defer
@@ -43,7 +43,7 @@ func TestGetTodos(t *testing.T) {
 
 func TestInsertTodo(t *testing.T) {
 	ctx := context.Background()
-	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(nil))
+	db, teardown := dblib.NewDB(ctx, t, repositorytest.WithTodo(nil))
 	defer teardown()
 
 	assertAfterAction := dblib.AssertRowsCountWith(t, db, "todo", 0 /* want*/)
@@ -76,7 +76,7 @@ func TestUpdateTodo(t *testing.T) {
 	todos := []entity.Todo{
 		{ID: id, Title: "go to bed", Content: "should sleep"},
 	}
-	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
+	db, teardown := dblib.NewDB(ctx, t, repositorytest.WithTodo(todos))
 	defer teardown()
 	dblib.AssertRowsCount(t, db, "todo", 1 /* want*/)
 
@@ -101,7 +101,7 @@ func TestDeleteTodo(t *testing.T) {
 	todos := []entity.Todo{
 		{ID: id, Title: "go to bed", Content: "should sleep"},
 	}
-	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
+	db, teardown := dblib.NewDB(ctx, t, repositorytest.WithTodo(todos))
 	defer teardown()
 
 	assertAfterAction := dblib.AssertRowsCountWith(t, db, "todo", 1 /* want*/)
