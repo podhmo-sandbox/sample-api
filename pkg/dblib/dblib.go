@@ -2,6 +2,7 @@ package dblib
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/jmoiron/sqlx"
@@ -11,6 +12,14 @@ import (
 type Config struct {
 	Driver string `flag:"driver"`
 	DSN    string `flag:"dsn"`
+}
+
+func (c *Config) New(ctx context.Context) (*sqlx.DB, error) {
+	db, err := sqlx.ConnectContext(ctx, c.Driver, c.DSN)
+	if err != nil {
+		return nil, fmt.Errorf("connect db: %w", err)
+	}
+	return db, nil
 }
 
 type DBOption func(*testing.T, *sqlx.DB)
