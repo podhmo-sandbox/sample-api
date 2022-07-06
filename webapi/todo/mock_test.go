@@ -3,7 +3,7 @@ package todo_test
 import (
 	"errors"
 
-	"github.com/podhmo-sandbox/sample-api/model/entity"
+	"github.com/podhmo-sandbox/sample-api/entity"
 )
 
 type MockTodoRepository struct {

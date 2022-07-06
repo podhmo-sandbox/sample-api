@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/podhmo-sandbox/sample-api/model/entity"
-	rt "github.com/podhmo-sandbox/sample-api/model/repository/repositorytest"
+	"github.com/podhmo-sandbox/sample-api/entity"
+	rt "github.com/podhmo-sandbox/sample-api/repository/repositorytest"
 )
 
 func TestGetTodos(t *testing.T) {
