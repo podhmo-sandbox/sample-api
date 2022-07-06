@@ -1,10 +1,12 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -21,20 +23,29 @@ type Config struct {
 	Addr string       `flag:"addr"`
 }
 
-func mount(r chi.Router, db *sqlx.DB) {
-	r.Route("/todos", func(r chi.Router) {
-		repo := repository.NewTodoRepository(db)
-		r.MethodFunc("GET", "/", todo.GetTodos(repo))
-		r.MethodFunc("POST", "/", todo.PostTodo(repo))
-		r.MethodFunc("PUT", "/", todo.PutTodo(repo))
-		r.MethodFunc("DELETE", "/", todo.DeleteTodo(repo))
-	})
+func main() {
+	config := &Config{DB: dblib.DefaultConfig(), Addr: ":8080"} // default values
+	flagstruct.Parse(config)
+	if err := run(*config); err != nil {
+		log.Fatalf("!! %+v", err)
+	}
 }
 
 func run(config Config) error {
+	// json.NewEncoder(os.Stdout).Encode(config)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	server := http.Server{
 		Addr: config.Addr,
 	}
+	go func() {
+		<-ctx.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		server.Shutdown(ctx)
+	}()
 
 	r := chi.NewRouter()
 
@@ -43,16 +54,21 @@ func run(config Config) error {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	json.NewEncoder(os.Stdout).Encode(config)
-	db := sqlx.MustConnect(config.DB.DSN, config.DB.Driver)
+
+	db, err := config.DB.New(ctx)
+	if err != nil {
+		return err
+	}
 	mount(r, db)
 	return server.ListenAndServe()
 }
 
-func main() {
-	config := &Config{DB: dblib.DefaultConfig(), Addr: ":8080"} // default values
-	flagstruct.Parse(config)
-	if err := run(*config); err != nil {
-		log.Fatalf("!! %+v", err)
-	}
+func mount(r chi.Router, db *sqlx.DB) {
+	r.Route("/todos", func(r chi.Router) {
+		repo := repository.NewTodoRepository(db)
+		r.MethodFunc("GET", "/", todo.GetTodos(repo))
+		r.MethodFunc("POST", "/", todo.PostTodo(repo))
+		r.MethodFunc("PUT", "/", todo.PutTodo(repo))
+		r.MethodFunc("DELETE", "/", todo.DeleteTodo(repo))
+	})
 }
