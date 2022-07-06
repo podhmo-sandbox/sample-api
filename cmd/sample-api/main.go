@@ -10,7 +10,13 @@ import (
 )
 
 func mount(r chi.Router) {
-	controller.Mount(r, repository.NewTodoRepository())
+	r.Route("/todos", func(r chi.Router) {
+		repo := repository.NewTodoRepository()
+		r.MethodFunc("GET", "", controller.GetTodos(repo))
+		r.MethodFunc("POST", "", controller.PostTodo(repo))
+		r.MethodFunc("PUT", "", controller.PutTodo(repo))
+		r.MethodFunc("DELETE", "", controller.DeleteTodo(repo))
+	})
 }
 
 func main() {
