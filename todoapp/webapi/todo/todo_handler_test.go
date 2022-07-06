@@ -2,180 +2,193 @@ package todo_test
 
 import (
 	"encoding/json"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	webapi "github.com/podhmo-sandbox/sample-api/todoapp/webapi/todo"
+	"github.com/podhmo/or"
 )
 
-func TestGetTodos_NotFound(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/todos/", nil)
+// TODO: performance up
 
-	target := webapi.GetTodos(&MockTodoRepository{})
-	target(w, r)
+func TestGetTodos(t *testing.T) {
+	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
+	ts := httptest.NewServer(router)
+	defer ts.Close()
 
-	if w.Code != 200 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-	if w.Header().Get("Content-Type") != "application/json" {
-		t.Errorf("Content-Type is %v", w.Header().Get("Content-Type"))
-	}
+	t.Run("not-found", func(t *testing.T) {
+		req := or.Fatal(http.NewRequest("GET", ts.URL+"/todos/", nil))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
 
-	body := make([]byte, w.Body.Len())
-	w.Body.Read(body)
-	var todosResponse webapi.TodosResponse
-	json.Unmarshal(body, &todosResponse)
-	if len(todosResponse.Todos) != 0 {
-		t.Errorf("Response is %v", todosResponse.Todos)
-	}
+		if res.StatusCode != 200 {
+			t.Errorf("Response code is %v", res.StatusCode)
+		}
+		if res.Header.Get("Content-Type") != "application/json" {
+			t.Errorf("Content-Type is %v", res.Header.Get("Content-Type"))
+		}
+
+		var todosResponse webapi.TodosResponse
+		if err := json.NewDecoder(res.Body).Decode(&todosResponse); err != nil {
+			t.Errorf("unexpected errpr (decode) %+v", err)
+		}
+		if len(todosResponse.Todos) != 0 {
+			t.Errorf("Response is %v", todosResponse.Todos)
+		}
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryGetTodosExist{})
+		ts := httptest.NewServer(router)
+		defer ts.Close()
+
+		req := or.Fatal(http.NewRequest("GET", ts.URL+"/todos/", nil))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
+
+		if res.StatusCode != 200 {
+			t.Errorf("Response code is %v", res.StatusCode)
+		}
+		if res.Header.Get("Content-Type") != "application/json" {
+			t.Errorf("Content-Type is %v", res.Header.Get("Content-Type"))
+		}
+
+		var todosResponse webapi.TodosResponse
+		if err := json.NewDecoder(res.Body).Decode(&todosResponse); err != nil {
+			t.Errorf("unexpected errpr (decode) %+v", err)
+		}
+		if len(todosResponse.Todos) != 2 {
+			t.Errorf("Response is %v", todosResponse.Todos)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
+		ts := httptest.NewServer(router)
+		defer ts.Close()
+
+		req := or.Fatal(http.NewRequest("GET", ts.URL+"/todos/", nil))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
+
+		if res.StatusCode != 500 {
+			t.Errorf("Response cod is %v", res.StatusCode)
+		}
+		if res.Header.Get("Content-Type") != "" {
+			t.Errorf("Content-Type is %v", res.Header.Get("Content-Type"))
+		}
+
+		// if res.Body.Len() != 0 {
+		// 	t.Errorf("body is %v", res.Body.Len())
+		// }
+	})
 }
 
-func TestGetTodos_ExistTodo(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/todos/", nil)
+func TestPostTodo(t *testing.T) {
+	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
+	ts := httptest.NewServer(router)
+	defer ts.Close()
 
-	target := webapi.GetTodos(&MockTodoRepositoryGetTodosExist{})
-	target(w, r)
+	t.Run("ok", func(t *testing.T) {
+		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
+		req := or.Fatal(http.NewRequest("POST", ts.URL+"/todos/", payload))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
 
-	if w.Code != 200 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-	if w.Header().Get("Content-Type") != "application/json" {
-		t.Errorf("Content-Type is %v", w.Header().Get("Content-Type"))
-	}
+		if res.StatusCode != 201 {
+			t.Errorf("Response code is %v", res.StatusCode)
+		}
+		if res.Header.Get("Location") != req.Host+req.URL.Path+"2" {
+			t.Errorf("Location is %v", res.Header.Get("Location"))
+		}
+	})
 
-	body := make([]byte, w.Body.Len())
-	w.Body.Read(body)
-	var todosResponse webapi.TodosResponse
-	json.Unmarshal(body, &todosResponse.Todos)
-	if len(todosResponse.Todos) != 2 {
-		t.Errorf("Response is %v", todosResponse.Todos)
-	}
+	t.Run("error", func(t *testing.T) {
+		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
+		ts := httptest.NewServer(router)
+		defer ts.Close()
+
+		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
+		req := or.Fatal(http.NewRequest("POST", ts.URL+"/todos/", payload))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
+
+		if res.StatusCode != 500 {
+			t.Errorf("Response code is %v", res.StatusCode)
+		}
+		if res.Header.Get("Location") != "" {
+			t.Errorf("Location is %v", res.Header.Get("Location"))
+		}
+	})
 }
 
-func TestGetTodos_Error(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/todos/", nil)
+func TestPutTodo(t *testing.T) {
+	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
+	ts := httptest.NewServer(router)
+	defer ts.Close()
 
-	target := webapi.GetTodos(&MockTodoRepositoryError{})
-	target(w, r)
+	t.Run("ok", func(t *testing.T) {
+		req := or.Fatal(http.NewRequest("PUT", ts.URL+"/todos/2", nil))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
 
-	if w.Code != 500 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-	if w.Header().Get("Content-Type") != "" {
-		t.Errorf("Content-Type is %v", w.Header().Get("Content-Type"))
-	}
+		if res.StatusCode != 204 {
+			t.Errorf("Response cod is %v", res.StatusCode)
+		}
+	})
 
-	if w.Body.Len() != 0 {
-		t.Errorf("body is %v", w.Body.Len())
-	}
+	t.Run("invalid-path", func(t *testing.T) {
+		req := or.Fatal(http.NewRequest("PUT", ts.URL+"/todos/", nil))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
+
+		if res.StatusCode != 405 {
+			t.Errorf("Response cod is %v", res.StatusCode)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
+		ts := httptest.NewServer(router)
+		defer ts.Close()
+
+		payload := strings.NewReader(`{"title":"test-title","contents":"test-content"}`)
+		req := or.Fatal(http.NewRequest("PUT", ts.URL+"/todos/2", payload))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
+
+		if res.StatusCode != 500 {
+			t.Errorf("Response cod is %v", res.StatusCode)
+		}
+	})
+
 }
 
-func TestPostTodo_OK(t *testing.T) {
-	json := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/todos/", json)
+func TestDeleteTodo(t *testing.T) {
+	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
+	ts := httptest.NewServer(router)
+	defer ts.Close()
 
-	target := webapi.PostTodo(&MockTodoRepository{})
-	target(w, r)
+	t.Run("ok", func(t *testing.T) {
+		req := or.Fatal(http.NewRequest("DELETE", ts.URL+"/todos/2", nil))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		if res.StatusCode != 204 {
+			t.Errorf("Response cod is %v", res.StatusCode)
+		}
+	})
 
-	if w.Code != 201 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-	if w.Header().Get("Location") != r.Host+r.URL.Path+"2" {
-		t.Errorf("Location is %v", w.Header().Get("Location"))
-	}
-}
+	t.Run("invalid-path", func(t *testing.T) {
+		req := or.Fatal(http.NewRequest("DELETE", ts.URL+"/todos/", nil))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		if res.StatusCode != 405 {
+			t.Errorf("Response cod is %v", res.StatusCode)
+		}
+	})
 
-func TestPostTodo_Error(t *testing.T) {
-	json := strings.NewReader(`{"title":"test-title","contents":"test-content"}`)
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/todos/", json)
+	t.Run("error", func(t *testing.T) {
+		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
+		ts := httptest.NewServer(router)
+		defer ts.Close()
 
-	target := webapi.PostTodo(&MockTodoRepositoryError{})
-	target(w, r)
-
-	if w.Code != 500 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-	if w.Header().Get("Location") != "" {
-		t.Errorf("Location is %v", w.Header().Get("Location"))
-	}
-}
-
-func TestPutTodo_OK(t *testing.T) {
-	json := strings.NewReader(`{"title":"test-title","contents":"test-content"}`)
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("PUT", "/todos/2", json)
-
-	target := webapi.PutTodo(&MockTodoRepository{})
-	target(w, r)
-
-	if w.Code != 204 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-}
-
-func TestPutTodo_InvalidPath(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("PUT", "/todos/", nil)
-
-	target := webapi.PutTodo(&MockTodoRepository{})
-	target(w, r)
-
-	if w.Code != 400 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-}
-
-func TestPutTodo_Error(t *testing.T) {
-	json := strings.NewReader(`{"title":"test-title","contents":"test-content"}`)
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("PUT", "/todos/2", json)
-
-	target := webapi.PutTodo(&MockTodoRepositoryError{})
-	target(w, r)
-
-	if w.Code != 500 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-}
-
-func TestDeleteTodo_OK(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("DELETE", "/todos/2", nil)
-
-	target := webapi.DeleteTodo(&MockTodoRepository{})
-	target(w, r)
-
-	if w.Code != 204 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-}
-
-func TestDeleteTodo_InvalidPath(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("DELETE", "/todos/", nil)
-
-	target := webapi.DeleteTodo(&MockTodoRepositoryError{})
-	target(w, r)
-
-	if w.Code != 400 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
-}
-
-func TestDeleteTodo_Error(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("DELETE", "/todos/2", nil)
-
-	target := webapi.DeleteTodo(&MockTodoRepositoryError{})
-	target(w, r)
-
-	if w.Code != 500 {
-		t.Errorf("Response cod is %v", w.Code)
-	}
+		req := or.Fatal(http.NewRequest("DELETE", ts.URL+"/todos/2", nil))(t)
+		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		if res.StatusCode != 500 {
+			t.Errorf("Response cod is %v", res.StatusCode)
+		}
+	})
 }
