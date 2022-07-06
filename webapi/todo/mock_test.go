@@ -1,4 +1,4 @@
-package test
+package todo_test
 
 import (
 	"errors"

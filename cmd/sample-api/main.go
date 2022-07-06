@@ -5,12 +5,18 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/podhmo-sandbox/sample-api/controller"
 	"github.com/podhmo-sandbox/sample-api/model/repository"
+	"github.com/podhmo-sandbox/sample-api/webapi/todo"
 )
 
 func mount(r chi.Router) {
-	controller.Mount(r, repository.NewTodoRepository())
+	r.Route("/todos", func(r chi.Router) {
+		repo := repository.NewTodoRepository()
+		r.MethodFunc("GET", "", todo.GetTodos(repo))
+		r.MethodFunc("POST", "", todo.PostTodo(repo))
+		r.MethodFunc("PUT", "", todo.PutTodo(repo))
+		r.MethodFunc("DELETE", "", todo.DeleteTodo(repo))
+	})
 }
 
 func main() {
