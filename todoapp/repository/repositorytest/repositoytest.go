@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/podhmo-sandbox/sample-api/entity"
 	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
+	"github.com/podhmo-sandbox/sample-api/todoapp/entity"
 )
 
 // setup
@@ -13,7 +13,7 @@ import (
 type DBOption = dblib.DBOption
 
 var (
-	DefaultDBConfig = dblib.DefaultDBConfig
+	DefaultDBConfig = dblib.DefaultConfig
 	NewDB           = dblib.NewDB
 )
 
