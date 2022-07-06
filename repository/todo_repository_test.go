@@ -10,6 +10,7 @@ import (
 	"github.com/podhmo-sandbox/sample-api/entity"
 	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
 	rt "github.com/podhmo-sandbox/sample-api/repository/repositorytest"
+	_ "modernc.org/sqlite"
 )
 
 func TestGetTodos(t *testing.T) {
