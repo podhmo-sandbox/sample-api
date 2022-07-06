@@ -10,7 +10,7 @@ import (
 )
 
 func mount(r chi.Router) {
-	controller.Mount(r, controller.NewTodoController(repository.NewTodoRepository()))
+	controller.Mount(r, repository.NewTodoRepository())
 }
 
 func main() {
