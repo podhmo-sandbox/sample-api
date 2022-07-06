@@ -3,17 +3,14 @@ package main
 import (
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/podhmo-sandbox/sample-api/controller"
-	"github.com/podhmo-sandbox/sample-api/controller/router"
 	"github.com/podhmo-sandbox/sample-api/model/repository"
 )
 
-type Router interface {
-	HandleTodosRequest(w http.ResponseWriter, r *http.Request)
-}
-
-func mount(ro Router) {
-	http.HandleFunc("/todos/", ro.HandleTodosRequest)
+func mount(r chi.Router) {
+	controller.Mount(r, controller.NewTodoController(repository.NewTodoRepository()))
 }
 
 func main() {
@@ -21,9 +18,14 @@ func main() {
 		Addr: ":8080",
 	}
 
-	tr := repository.NewTodoRepository()
-	tc := controller.NewTodoController(tr)
-	ro := router.NewRouter(tc)
-	mount(ro)
+	r := chi.NewRouter()
+
+	// A good base middleware stack
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	mount(r)
 	server.ListenAndServe()
 }
