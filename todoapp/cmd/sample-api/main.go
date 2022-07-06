@@ -64,11 +64,8 @@ func run(config Config) error {
 }
 
 func mount(r chi.Router, db *sqlx.DB) {
-	r.Route("/todos", func(r chi.Router) {
+	{
 		repo := repository.NewTodoRepository(db)
-		r.MethodFunc("GET", "/", todo.GetTodos(repo))
-		r.MethodFunc("POST", "/", todo.PostTodo(repo))
-		r.MethodFunc("PUT", "/", todo.PutTodo(repo))
-		r.MethodFunc("DELETE", "/", todo.DeleteTodo(repo))
-	})
+		todo.Mount(r, repo)
+	}
 }
