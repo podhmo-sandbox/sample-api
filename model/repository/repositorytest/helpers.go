@@ -18,3 +18,12 @@ func AssertRowsCount(t *testing.T, db *sqlx.DB, tablename string, want int) {
 		t.Errorf("count(%v): want=%d != got=%d", tablename, want, got)
 	}
 }
+
+func AssertRowsCountWith(t *testing.T, db *sqlx.DB, tablename string, want int) func(int) {
+	t.Helper()
+	AssertRowsCount(t, db, tablename, want)
+	return func(want int) {
+		t.Helper()
+		AssertRowsCount(t, db, tablename, want)
+	}
+}

@@ -44,7 +44,9 @@ func TestInsertTodo(t *testing.T) {
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(nil))
 	defer teardown()
 
-	rt.AssertRowsCount(t, db, "todo", 0 /* want*/) // todo: checking by defer
+	assertAfterAction := rt.AssertRowsCountWith(t, db, "todo", 0 /* want*/)
+	defer assertAfterAction(1 /* want */)
+
 	want := entity.Todo{
 		Title:   "go to bed",
 		Content: "should sleep",
@@ -63,7 +65,6 @@ func TestInsertTodo(t *testing.T) {
 	if diff := cmp.Diff(want, got, cmpopts.IgnoreFields(entity.Todo{}, "ID")); diff != "" {
 		t.Errorf("GetContext() mismatch (-want +got):\n%s", diff)
 	}
-	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
 }
 
 func TestUpdateTodo(t *testing.T) {
@@ -100,11 +101,12 @@ func TestDeleteTodo(t *testing.T) {
 	}
 	db, teardown := rt.NewDB(ctx, t, rt.WithTodo(todos))
 	defer teardown()
-	rt.AssertRowsCount(t, db, "todo", 1 /* want*/)
+
+	assertAfterAction := rt.AssertRowsCountWith(t, db, "todo", 1 /* want*/)
+	defer assertAfterAction(0 /* want */)
 
 	repo := &TodoRepository{DB: db}
 	if err := repo.DeleteTodo(todos[0].ID); err != nil {
 		t.Errorf("unexpected error: %+v", err)
 	}
-	rt.AssertRowsCount(t, db, "todo", 0 /* want*/)
 }
