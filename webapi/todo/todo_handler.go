@@ -1,4 +1,4 @@
-package controller
+package todo
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/podhmo-sandbox/sample-api/controller/dto"
 	"github.com/podhmo-sandbox/sample-api/model/entity"
 )
 
@@ -20,12 +19,12 @@ func GetTodos(repo interface {
 			return
 		}
 
-		var todoResponses []dto.TodoResponse
+		var todoResponses []TodoResponse
 		for _, v := range todos {
-			todoResponses = append(todoResponses, dto.TodoResponse{ID: v.ID, Title: v.Title, Content: v.Content})
+			todoResponses = append(todoResponses, TodoResponse{ID: v.ID, Title: v.Title, Content: v.Content})
 		}
 
-		var todosResponse dto.TodosResponse
+		var todosResponse TodosResponse
 		todosResponse.Todos = todoResponses
 
 		output, _ := json.MarshalIndent(todosResponse.Todos, "", "\t\t")
@@ -41,7 +40,7 @@ func PostTodo(repo interface {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body := make([]byte, r.ContentLength)
 		r.Body.Read(body)
-		var todoRequest dto.TodoRequest
+		var todoRequest TodoRequest
 		json.Unmarshal(body, &todoRequest)
 
 		todo := entity.Todo{Title: todoRequest.Title, Content: todoRequest.Content}
@@ -68,7 +67,7 @@ func PutTodo(repo interface {
 
 		body := make([]byte, r.ContentLength)
 		r.Body.Read(body)
-		var todoRequest dto.TodoRequest
+		var todoRequest TodoRequest
 		json.Unmarshal(body, &todoRequest)
 
 		todo := entity.Todo{ID: todoID, Title: todoRequest.Title, Content: todoRequest.Content}

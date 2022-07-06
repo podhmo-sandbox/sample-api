@@ -1,4 +1,4 @@
-package controller
+package todo
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/podhmo-sandbox/sample-api/controller/dto"
 	"github.com/podhmo-sandbox/sample-api/test"
 )
 
@@ -26,7 +25,7 @@ func TestGetTodos_NotFound(t *testing.T) {
 
 	body := make([]byte, w.Body.Len())
 	w.Body.Read(body)
-	var todosResponse dto.TodosResponse
+	var todosResponse TodosResponse
 	json.Unmarshal(body, &todosResponse)
 	if len(todosResponse.Todos) != 0 {
 		t.Errorf("Response is %v", todosResponse.Todos)
@@ -49,7 +48,7 @@ func TestGetTodos_ExistTodo(t *testing.T) {
 
 	body := make([]byte, w.Body.Len())
 	w.Body.Read(body)
-	var todosResponse dto.TodosResponse
+	var todosResponse TodosResponse
 	json.Unmarshal(body, &todosResponse.Todos)
 	if len(todosResponse.Todos) != 2 {
 		t.Errorf("Response is %v", todosResponse.Todos)
