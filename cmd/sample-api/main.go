@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/podhmo-sandbox/sample-api/model/repository"
+	"github.com/podhmo-sandbox/sample-api/repository"
 	"github.com/podhmo-sandbox/sample-api/webapi/todo"
 )
 
