@@ -11,8 +11,8 @@ type TodoRepository struct {
 	DB *sqlx.DB
 }
 
-func NewTodoRepository() *TodoRepository {
-	return &TodoRepository{DB: Db}
+func NewTodoRepository(db *sqlx.DB) *TodoRepository {
+	return &TodoRepository{DB: db}
 }
 
 func (tr *TodoRepository) GetTodos() ([]entity.Todo, error) {
