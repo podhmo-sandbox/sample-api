@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/podhmo-sandbox/sample-api/model/entity"
+	"github.com/podhmo-sandbox/sample-api/entity"
 )
 
 type TodoRepository struct {

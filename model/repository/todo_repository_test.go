@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/podhmo-sandbox/sample-api/model/entity"
+	"github.com/podhmo-sandbox/sample-api/entity"
 	rt "github.com/podhmo-sandbox/sample-api/model/repository/repositorytest"
 )
 
