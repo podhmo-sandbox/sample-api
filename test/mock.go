@@ -2,29 +2,9 @@ package test
 
 import (
 	"errors"
-	"net/http"
 
 	"github.com/podhmo-sandbox/sample-api/model/entity"
 )
-
-type MockTodoController struct {
-}
-
-func (mtc *MockTodoController) GetTodos(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(200)
-}
-
-func (mtc *MockTodoController) PostTodo(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(201)
-}
-
-func (mtc *MockTodoController) PutTodo(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(204)
-}
-
-func (mtc *MockTodoController) DeleteTodo(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(204)
-}
 
 type MockTodoRepository struct {
 }
