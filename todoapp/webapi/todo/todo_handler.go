@@ -3,15 +3,20 @@ package todo
 import (
 	"encoding/json"
 	"net/http"
-	"path"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/podhmo-sandbox/sample-api/todoapp/entity"
 )
 
-func GetTodos(repo interface {
+type todoRepository interface {
 	GetTodos() (todos []entity.Todo, err error)
-}) func(w http.ResponseWriter, r *http.Request) {
+	InsertTodo(todo entity.Todo) (id int, err error)
+	UpdateTodo(todo entity.Todo) (err error)
+	DeleteTodo(id int) (err error)
+}
+
+func GetTodos(repo todoRepository) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		todos, err := repo.GetTodos()
 		if err != nil {
@@ -27,16 +32,14 @@ func GetTodos(repo interface {
 		var todosResponse TodosResponse
 		todosResponse.Todos = todoResponses
 
-		output, _ := json.MarshalIndent(todosResponse.Todos, "", "\t\t")
+		output, _ := json.MarshalIndent(todosResponse, "", "\t\t")
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
 }
 
-func PostTodo(repo interface {
-	InsertTodo(todo entity.Todo) (id int, err error)
-}) func(w http.ResponseWriter, r *http.Request) {
+func PostTodo(repo todoRepository) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body := make([]byte, r.ContentLength)
 		r.Body.Read(body)
@@ -55,11 +58,9 @@ func PostTodo(repo interface {
 	}
 }
 
-func PutTodo(repo interface {
-	UpdateTodo(todo entity.Todo) (err error)
-}) func(w http.ResponseWriter, r *http.Request) {
+func PutTodo(repo todoRepository) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		todoID, err := strconv.Atoi(path.Base(r.URL.Path))
+		todoID, err := strconv.Atoi(chi.URLParam(r, "todoId"))
 		if err != nil {
 			w.WriteHeader(400)
 			return
@@ -81,11 +82,9 @@ func PutTodo(repo interface {
 	}
 }
 
-func DeleteTodo(repo interface {
-	DeleteTodo(id int) (err error)
-}) func(w http.ResponseWriter, r *http.Request) {
+func DeleteTodo(repo todoRepository) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		todoID, err := strconv.Atoi(path.Base(r.URL.Path))
+		todoID, err := strconv.Atoi(chi.URLParam(r, "todoId"))
 		if err != nil {
 			w.WriteHeader(400)
 			return
