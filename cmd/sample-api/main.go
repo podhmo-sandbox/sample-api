@@ -17,7 +17,8 @@ import (
 )
 
 type Config struct {
-	DB dblib.Config `flag:"db"`
+	DB   dblib.Config `flag:"db"`
+	Addr string       `flag:"addr"`
 }
 
 func mount(r chi.Router, db *sqlx.DB) {
@@ -32,7 +33,7 @@ func mount(r chi.Router, db *sqlx.DB) {
 
 func run(config Config) error {
 	server := http.Server{
-		Addr: ":8080",
+		Addr: config.Addr,
 	}
 
 	r := chi.NewRouter()
@@ -49,7 +50,7 @@ func run(config Config) error {
 }
 
 func main() {
-	config := &Config{DB: dblib.DefaultConfig()} // default values
+	config := &Config{DB: dblib.DefaultConfig(), Addr: ":8080"} // default values
 	flagstruct.Parse(config)
 	if err := run(*config); err != nil {
 		log.Fatalf("!! %+v", err)
