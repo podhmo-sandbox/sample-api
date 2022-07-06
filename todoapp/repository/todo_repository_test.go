@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/podhmo-sandbox/sample-api/todoapp/entity"
 	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
+	"github.com/podhmo-sandbox/sample-api/todoapp/entity"
 	"github.com/podhmo-sandbox/sample-api/todoapp/repository/repositorytest"
 	_ "modernc.org/sqlite"
 )
