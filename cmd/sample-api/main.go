@@ -1,15 +1,24 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jmoiron/sqlx"
+	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
 	"github.com/podhmo-sandbox/sample-api/repository"
 	"github.com/podhmo-sandbox/sample-api/webapi/todo"
+	"github.com/podhmo/flagstruct"
 	_ "modernc.org/sqlite"
 )
+
+type Config struct {
+	DB dblib.Config `flag:"db"`
+}
 
 func mount(r chi.Router, db *sqlx.DB) {
 	r.Route("/todos", func(r chi.Router) {
@@ -21,7 +30,7 @@ func mount(r chi.Router, db *sqlx.DB) {
 	})
 }
 
-func main() {
+func run(config Config) error {
 	server := http.Server{
 		Addr: ":8080",
 	}
@@ -33,8 +42,16 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-
-	db := sqlx.MustConnect("sqlite", ":memory:")
+	json.NewEncoder(os.Stdout).Encode(config)
+	db := sqlx.MustConnect(config.DB.DSN, config.DB.Driver)
 	mount(r, db)
-	server.ListenAndServe()
+	return server.ListenAndServe()
+}
+
+func main() {
+	config := &Config{DB: dblib.DefaultConfig()} // default values
+	flagstruct.Parse(config)
+	if err := run(*config); err != nil {
+		log.Fatalf("!! %+v", err)
+	}
 }

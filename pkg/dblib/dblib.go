@@ -8,19 +8,19 @@ import (
 	"github.com/podhmo/or"
 )
 
-type DBOption func(*testing.T, *sqlx.DB)
-
-type DBConfig struct {
-	Driver string
-	DSN    string
+type Config struct {
+	Driver string `flag:"driver"`
+	DSN    string `flag:"dsn"`
 }
 
-func DefaultDBConfig() DBConfig {
-	return DBConfig{Driver: "sqlite", DSN: ":memory:"}
+type DBOption func(*testing.T, *sqlx.DB)
+
+func DefaultConfig() Config {
+	return Config{Driver: "sqlite", DSN: ":memory:"}
 }
 
 func NewDB(ctx context.Context, t *testing.T, options ...DBOption) (*sqlx.DB, func()) {
-	c := DefaultDBConfig()
+	c := DefaultConfig()
 	db := or.Fatal(sqlx.ConnectContext(ctx, c.Driver, c.DSN))(t)
 
 	for _, opt := range options {
