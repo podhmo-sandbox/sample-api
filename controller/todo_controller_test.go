@@ -14,8 +14,8 @@ func TestGetTodos_NotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/todos/", nil)
 
-	target := NewTodoController(&test.MockTodoRepository{})
-	target.GetTodos(w, r)
+	target := GetTodos(&test.MockTodoRepository{})
+	target(w, r)
 
 	if w.Code != 200 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -37,8 +37,8 @@ func TestGetTodos_ExistTodo(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/todos/", nil)
 
-	target := NewTodoController(&test.MockTodoRepositoryGetTodosExist{})
-	target.GetTodos(w, r)
+	target := GetTodos(&test.MockTodoRepositoryGetTodosExist{})
+	target(w, r)
 
 	if w.Code != 200 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -60,8 +60,8 @@ func TestGetTodos_Error(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/todos/", nil)
 
-	target := NewTodoController(&test.MockTodoRepositoryError{})
-	target.GetTodos(w, r)
+	target := GetTodos(&test.MockTodoRepositoryError{})
+	target(w, r)
 
 	if w.Code != 500 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -80,8 +80,8 @@ func TestPostTodo_OK(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", "/todos/", json)
 
-	target := NewTodoController(&test.MockTodoRepository{})
-	target.PostTodo(w, r)
+	target := PostTodo(&test.MockTodoRepository{})
+	target(w, r)
 
 	if w.Code != 201 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -96,8 +96,8 @@ func TestPostTodo_Error(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", "/todos/", json)
 
-	target := NewTodoController(&test.MockTodoRepositoryError{})
-	target.PostTodo(w, r)
+	target := PostTodo(&test.MockTodoRepositoryError{})
+	target(w, r)
 
 	if w.Code != 500 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -112,8 +112,8 @@ func TestPutTodo_OK(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("PUT", "/todos/2", json)
 
-	target := NewTodoController(&test.MockTodoRepository{})
-	target.PutTodo(w, r)
+	target := PutTodo(&test.MockTodoRepository{})
+	target(w, r)
 
 	if w.Code != 204 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -124,8 +124,8 @@ func TestPutTodo_InvalidPath(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("PUT", "/todos/", nil)
 
-	target := NewTodoController(&test.MockTodoRepository{})
-	target.PutTodo(w, r)
+	target := PutTodo(&test.MockTodoRepository{})
+	target(w, r)
 
 	if w.Code != 400 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -137,8 +137,8 @@ func TestPutTodo_Error(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("PUT", "/todos/2", json)
 
-	target := NewTodoController(&test.MockTodoRepositoryError{})
-	target.PutTodo(w, r)
+	target := PutTodo(&test.MockTodoRepositoryError{})
+	target(w, r)
 
 	if w.Code != 500 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -149,8 +149,8 @@ func TestDeleteTodo_OK(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("DELETE", "/todos/2", nil)
 
-	target := NewTodoController(&test.MockTodoRepository{})
-	target.DeleteTodo(w, r)
+	target := DeleteTodo(&test.MockTodoRepository{})
+	target(w, r)
 
 	if w.Code != 204 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -161,8 +161,8 @@ func TestDeleteTodo_InvalidPath(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("DELETE", "/todos/", nil)
 
-	target := NewTodoController(&test.MockTodoRepositoryError{})
-	target.DeleteTodo(w, r)
+	target := DeleteTodo(&test.MockTodoRepositoryError{})
+	target(w, r)
 
 	if w.Code != 400 {
 		t.Errorf("Response cod is %v", w.Code)
@@ -173,8 +173,8 @@ func TestDeleteTodo_Error(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("DELETE", "/todos/2", nil)
 
-	target := NewTodoController(&test.MockTodoRepositoryError{})
-	target.DeleteTodo(w, r)
+	target := DeleteTodo(&test.MockTodoRepositoryError{})
+	target(w, r)
 
 	if w.Code != 500 {
 		t.Errorf("Response cod is %v", w.Code)
