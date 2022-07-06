@@ -12,8 +12,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
-	"github.com/podhmo-sandbox/sample-api/repository"
-	"github.com/podhmo-sandbox/sample-api/webapi/todo"
+	"github.com/podhmo-sandbox/sample-api/todoapp/repository"
+	"github.com/podhmo-sandbox/sample-api/todoapp/webapi/todo"
 	"github.com/podhmo/flagstruct"
 	_ "modernc.org/sqlite"
 )

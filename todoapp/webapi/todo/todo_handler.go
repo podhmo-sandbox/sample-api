@@ -6,7 +6,7 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/podhmo-sandbox/sample-api/entity"
+	"github.com/podhmo-sandbox/sample-api/todoapp/entity"
 )
 
 func GetTodos(repo interface {

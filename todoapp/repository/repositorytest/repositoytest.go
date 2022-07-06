@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/podhmo-sandbox/sample-api/entity"
+	"github.com/podhmo-sandbox/sample-api/todoapp/entity"
 	"github.com/podhmo-sandbox/sample-api/pkg/dblib"
 )
 

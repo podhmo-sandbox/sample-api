@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	webapi "github.com/podhmo-sandbox/sample-api/webapi/todo"
+	webapi "github.com/podhmo-sandbox/sample-api/todoapp/webapi/todo"
 )
 
 func TestGetTodos_NotFound(t *testing.T) {
