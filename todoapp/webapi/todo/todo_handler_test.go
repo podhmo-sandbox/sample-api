@@ -2,26 +2,24 @@ package todo_test
 
 import (
 	"encoding/json"
-	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
 	webapi "github.com/podhmo-sandbox/sample-api/todoapp/webapi/todo"
-	"github.com/podhmo/or"
 )
 
 // TODO: performance up
 
 func TestGetTodos(t *testing.T) {
 	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
-	ts := httptest.NewServer(router)
-	defer ts.Close()
 
 	t.Run("not-found", func(t *testing.T) {
-		req := or.Fatal(http.NewRequest("GET", ts.URL+"/todos/", nil))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("GET", "/todos/", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
 
 		if res.StatusCode != 200 {
 			t.Errorf("Response code is %v", res.StatusCode)
@@ -41,11 +39,11 @@ func TestGetTodos(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryGetTodosExist{})
-		ts := httptest.NewServer(router)
-		defer ts.Close()
 
-		req := or.Fatal(http.NewRequest("GET", ts.URL+"/todos/", nil))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("GET", "/todos/", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
 
 		if res.StatusCode != 200 {
 			t.Errorf("Response code is %v", res.StatusCode)
@@ -65,11 +63,11 @@ func TestGetTodos(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
-		ts := httptest.NewServer(router)
-		defer ts.Close()
 
-		req := or.Fatal(http.NewRequest("GET", ts.URL+"/todos/", nil))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("GET", "/todos/", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
 
 		if res.StatusCode != 500 {
 			t.Errorf("Response cod is %v", res.StatusCode)
@@ -86,13 +84,14 @@ func TestGetTodos(t *testing.T) {
 
 func TestPostTodo(t *testing.T) {
 	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
-	ts := httptest.NewServer(router)
-	defer ts.Close()
 
 	t.Run("ok", func(t *testing.T) {
 		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
-		req := or.Fatal(http.NewRequest("POST", ts.URL+"/todos/", payload))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+
+		req := httptest.NewRequest("POST", "/todos/", payload)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
 
 		if res.StatusCode != 201 {
 			t.Errorf("Response code is %v", res.StatusCode)
@@ -104,12 +103,12 @@ func TestPostTodo(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
-		ts := httptest.NewServer(router)
-		defer ts.Close()
 
 		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
-		req := or.Fatal(http.NewRequest("POST", ts.URL+"/todos/", payload))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("POST", "/todos/", payload)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
 
 		if res.StatusCode != 500 {
 			t.Errorf("Response code is %v", res.StatusCode)
@@ -122,12 +121,13 @@ func TestPostTodo(t *testing.T) {
 
 func TestPutTodo(t *testing.T) {
 	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
-	ts := httptest.NewServer(router)
-	defer ts.Close()
 
 	t.Run("ok", func(t *testing.T) {
-		req := or.Fatal(http.NewRequest("PUT", ts.URL+"/todos/2", nil))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		payload := strings.NewReader(`{"title":"test-title","contents":"test-content"}`)
+		req := httptest.NewRequest("PUT", "/todos/2", payload)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
 
 		if res.StatusCode != 204 {
 			t.Errorf("Response cod is %v", res.StatusCode)
@@ -135,8 +135,10 @@ func TestPutTodo(t *testing.T) {
 	})
 
 	t.Run("invalid-path", func(t *testing.T) {
-		req := or.Fatal(http.NewRequest("PUT", ts.URL+"/todos/", nil))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("PUT", "/todos/", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
 
 		if res.StatusCode != 405 {
 			t.Errorf("Response cod is %v", res.StatusCode)
@@ -145,12 +147,12 @@ func TestPutTodo(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
-		ts := httptest.NewServer(router)
-		defer ts.Close()
 
 		payload := strings.NewReader(`{"title":"test-title","contents":"test-content"}`)
-		req := or.Fatal(http.NewRequest("PUT", ts.URL+"/todos/2", payload))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("PUT", "/todos/2", payload)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
 
 		if res.StatusCode != 500 {
 			t.Errorf("Response cod is %v", res.StatusCode)
@@ -161,20 +163,24 @@ func TestPutTodo(t *testing.T) {
 
 func TestDeleteTodo(t *testing.T) {
 	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
-	ts := httptest.NewServer(router)
-	defer ts.Close()
 
 	t.Run("ok", func(t *testing.T) {
-		req := or.Fatal(http.NewRequest("DELETE", ts.URL+"/todos/2", nil))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("DELETE", "/todos/2", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
+
 		if res.StatusCode != 204 {
 			t.Errorf("Response cod is %v", res.StatusCode)
 		}
 	})
 
 	t.Run("invalid-path", func(t *testing.T) {
-		req := or.Fatal(http.NewRequest("DELETE", ts.URL+"/todos/", nil))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("DELETE", "/todos/", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
+
 		if res.StatusCode != 405 {
 			t.Errorf("Response cod is %v", res.StatusCode)
 		}
@@ -182,11 +188,12 @@ func TestDeleteTodo(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
-		ts := httptest.NewServer(router)
-		defer ts.Close()
 
-		req := or.Fatal(http.NewRequest("DELETE", ts.URL+"/todos/2", nil))(t)
-		res := or.Fatal(http.DefaultClient.Do(req))(t)
+		req := httptest.NewRequest("DELETE", "/todos/2", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		res := rec.Result()
+
 		if res.StatusCode != 500 {
 			t.Errorf("Response cod is %v", res.StatusCode)
 		}
