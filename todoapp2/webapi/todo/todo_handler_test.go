@@ -1,201 +1,146 @@
 package todo_test
 
 import (
-	"encoding/json"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/go-cmp/cmp"
+	"github.com/podhmo-sandbox/sample-api/todoapp2/webapi/todo"
 	webapi "github.com/podhmo-sandbox/sample-api/todoapp2/webapi/todo"
+	"github.com/podhmo/quickapi"
+	"github.com/podhmo/quickapi/quickapitest"
 )
 
 // TODO: performance up
 
 func TestGetTodos(t *testing.T) {
-	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
-
 	t.Run("not-found", func(t *testing.T) {
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepository{}).ServeHTTP)
+		code := 200
+		want := webapi.TodosResponse{Todos: []todo.TodoResponse{}}
+
 		req := httptest.NewRequest("GET", "/todos/", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
+		got := quickapitest.DoRequest[webapi.TodosResponse](t, req, code, handler)
 
-		if res.StatusCode != 200 {
-			t.Errorf("Response code is %v", res.StatusCode)
-		}
-		if res.Header.Get("Content-Type") != "application/json" {
-			t.Errorf("Content-Type is %v", res.Header.Get("Content-Type"))
-		}
-
-		var todosResponse webapi.TodosResponse
-		if err := json.NewDecoder(res.Body).Decode(&todosResponse); err != nil {
-			t.Errorf("unexpected errpr (decode) %+v", err)
-		}
-		if len(todosResponse.Todos) != 0 {
-			t.Errorf("Response is %v", todosResponse.Todos)
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("%s %s, response mismatch (-want +got):\n%s", req.Method, req.URL.Path, diff)
 		}
 	})
 
 	t.Run("ok", func(t *testing.T) {
-		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryGetTodosExist{})
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepositoryGetTodosExist{}).ServeHTTP)
+		code := 200
+		want := webapi.TodosResponse{Todos: []todo.TodoResponse{
+			{ID: 1, Title: "title1", Content: "contents1"},
+			{ID: 2, Title: "title2", Content: "contents2"},
+		}}
 
 		req := httptest.NewRequest("GET", "/todos/", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
+		got := quickapitest.DoRequest[webapi.TodosResponse](t, req, code, handler)
 
-		if res.StatusCode != 200 {
-			t.Errorf("Response code is %v", res.StatusCode)
-		}
-		if res.Header.Get("Content-Type") != "application/json" {
-			t.Errorf("Content-Type is %v", res.Header.Get("Content-Type"))
-		}
-
-		var todosResponse webapi.TodosResponse
-		if err := json.NewDecoder(res.Body).Decode(&todosResponse); err != nil {
-			t.Errorf("unexpected errpr (decode) %+v", err)
-		}
-		if len(todosResponse.Todos) != 2 {
-			t.Errorf("Response is %v", todosResponse.Todos)
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("%s %s, response mismatch (-want +got):\n%s", req.Method, req.URL.Path, diff)
 		}
 	})
 
 	t.Run("error", func(t *testing.T) {
-		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{}).ServeHTTP)
+		code := 500
+		want := quickapi.ErrorResponse{Code: code, Error: "internal server error"}
 
 		req := httptest.NewRequest("GET", "/todos/", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
+		got := quickapitest.DoRequest[quickapi.ErrorResponse](t, req, code, handler)
 
-		if res.StatusCode != 500 {
-			t.Errorf("Response cod is %v", res.StatusCode)
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("%s %s, response mismatch (-want +got):\n%s", req.Method, req.URL.Path, diff)
 		}
-		if res.Header.Get("Content-Type") != "" {
-			t.Errorf("Content-Type is %v", res.Header.Get("Content-Type"))
-		}
-
-		// if res.Body.Len() != 0 {
-		// 	t.Errorf("body is %v", res.Body.Len())
-		// }
 	})
 }
 
 func TestPostTodo(t *testing.T) {
-	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
-
 	t.Run("ok", func(t *testing.T) {
+		code := 201
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepository{}).ServeHTTP)
 		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
 
 		req := httptest.NewRequest("POST", "/todos/", payload)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
-
-		if res.StatusCode != 201 {
-			t.Errorf("Response code is %v", res.StatusCode)
-		}
-		if res.Header.Get("Location") != req.Host+req.URL.Path+"2" {
-			t.Errorf("Location is %v", res.Header.Get("Location"))
-		}
+		quickapitest.DoRequest[any](t, req, code, handler, func(t *testing.T, res *http.Response) {
+			if res.Header.Get("Location") != req.Host+req.URL.Path+"2" {
+				t.Errorf("Location is %v", res.Header.Get("Location"))
+			}
+		})
 	})
 
+	// TODO: bad request
+
 	t.Run("error", func(t *testing.T) {
-		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{}).ServeHTTP)
+		code := 500
+		want := quickapi.ErrorResponse{Code: code, Error: "internal server error"}
 
 		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
 		req := httptest.NewRequest("POST", "/todos/", payload)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
+		got := quickapitest.DoRequest[quickapi.ErrorResponse](t, req, code, handler)
 
-		if res.StatusCode != 500 {
-			t.Errorf("Response code is %v", res.StatusCode)
-		}
-		if res.Header.Get("Location") != "" {
-			t.Errorf("Location is %v", res.Header.Get("Location"))
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("%s %s, response mismatch (-want +got):\n%s", req.Method, req.URL.Path, diff)
 		}
 	})
 }
 
 func TestPutTodo(t *testing.T) {
-	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
-
 	t.Run("ok", func(t *testing.T) {
-		payload := strings.NewReader(`{"title":"test-title","contents":"test-content"}`)
-		req := httptest.NewRequest("PUT", "/todos/2", payload)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepository{}).ServeHTTP)
+		code := 204
 
-		if res.StatusCode != 204 {
-			t.Errorf("Response cod is %v", res.StatusCode)
-		}
+		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
+		req := httptest.NewRequest("PUT", "/todos/2", payload)
+		quickapitest.DoRequest[any](t, req, code, handler)
 	})
 
 	t.Run("invalid-path", func(t *testing.T) {
-		req := httptest.NewRequest("PUT", "/todos/", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepository{}).ServeHTTP)
+		code := http.StatusMethodNotAllowed
 
-		if res.StatusCode != 405 {
-			t.Errorf("Response cod is %v", res.StatusCode)
-		}
+		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
+		req := httptest.NewRequest("PUT", "/todos/", payload)
+		quickapitest.DoRequest[any](t, req, code, handler)
 	})
 
 	t.Run("error", func(t *testing.T) {
-		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
+		code := 500
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{}).ServeHTTP)
 
-		payload := strings.NewReader(`{"title":"test-title","contents":"test-content"}`)
+		payload := strings.NewReader(`{"title":"test-title","content":"test-content"}`)
 		req := httptest.NewRequest("PUT", "/todos/2", payload)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
-
-		if res.StatusCode != 500 {
-			t.Errorf("Response cod is %v", res.StatusCode)
-		}
+		quickapitest.DoRequest[any](t, req, code, handler)
 	})
-
 }
 
 func TestDeleteTodo(t *testing.T) {
-	router := webapi.Mount(chi.NewRouter(), &MockTodoRepository{})
-
+	handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepository{}).ServeHTTP)
 	t.Run("ok", func(t *testing.T) {
-		req := httptest.NewRequest("DELETE", "/todos/2", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
+		code := 204
 
-		if res.StatusCode != 204 {
-			t.Errorf("Response cod is %v", res.StatusCode)
-		}
+		req := httptest.NewRequest("DELETE", "/todos/2", nil)
+		quickapitest.DoRequest[any](t, req, code, handler)
 	})
 
 	t.Run("invalid-path", func(t *testing.T) {
-		req := httptest.NewRequest("DELETE", "/todos/", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
+		code := http.StatusMethodNotAllowed
 
-		if res.StatusCode != 405 {
-			t.Errorf("Response cod is %v", res.StatusCode)
-		}
+		req := httptest.NewRequest("DELETE", "/todos/", nil)
+		quickapitest.DoRequest[any](t, req, code, handler)
 	})
 
 	t.Run("error", func(t *testing.T) {
-		router := webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{})
+		handler := http.HandlerFunc(webapi.Mount(chi.NewRouter(), &MockTodoRepositoryError{}).ServeHTTP)
+		code := 500
 
 		req := httptest.NewRequest("DELETE", "/todos/2", nil)
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		res := rec.Result()
-
-		if res.StatusCode != 500 {
-			t.Errorf("Response cod is %v", res.StatusCode)
-		}
+		quickapitest.DoRequest[any](t, req, code, handler)
 	})
 }
