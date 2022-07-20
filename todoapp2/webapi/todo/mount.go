@@ -1,17 +1,17 @@
 package todo
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/podhmo/quickapi"
+	"github.com/podhmo/quickapi/experimental/define"
 )
 
-func Mount(r chi.Router, repo todoRepository) chi.Router {
-	r.Route("/todos", func(r chi.Router) {
+func Mount(
+	repo todoRepository,
+) func(*define.BuildContext) {
+	return func(bc *define.BuildContext) {
 		h := &Handler{Repo: repo}
-		r.MethodFunc("GET", "/", quickapi.Lift(h.GetTodos))
-		r.MethodFunc("POST", "/", quickapi.Lift(h.PostTodo))
-		r.MethodFunc("PUT", "/{todoId}", quickapi.Lift(h.PutTodo))
-		r.MethodFunc("DELETE", "/{todoId}", quickapi.Lift(h.DeleteTodo))
-	})
-	return r
+		define.Get(bc, "/todos", h.GetTodos)
+		define.Post(bc, "/todos", h.PostTodo)
+		define.Put(bc, "/todos/{todoId}", h.PutTodo)
+		define.Delete(bc, "/todos/{todoId}", h.DeleteTodo)
+	}
 }
